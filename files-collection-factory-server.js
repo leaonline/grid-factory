@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import { FilesCollection } from 'meteor/ostrio:files'
+import { getContentDisposition } from './lib/server/getContentDisposition'
 
 export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, defaultBucket, createObjectId, debug }) => {
   check(i18nFactory, Function)
@@ -10,14 +11,23 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
   check(createObjectId, Function)
   check(debug, Match.Maybe(Boolean))
 
+  const log = (...args) => Meteor.isDevelopment && debug && console.info('[FilesCollectionFactory]:', ...args)
+  log('set default bucket', defaultBucket)
+
   return ({ bucketName, maxSize, extensions, validateUser, validateMime, onBeforeUpload, transformVersions, ...config }) => {
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
 
+    log('create files collection', config.collectionName)
+
     const bucket = bucketFactory(bucketName || defaultBucket)
     const maxSizeKb = maxSize && (maxSize / 1024000)
 
+    log('use bucket', bucketName || defaultBucket)
+    log('use max size', maxSizeKb)
+
     const checkSize = (file) => {
+      log('check size')
       if (maxSize && file.size > maxSize) {
         return i18nFactory('filesCollection.maxSizeExceed', { maxSize: maxSizeKb })
       }
@@ -25,19 +35,23 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
 
     const allowedExtensions = extensions && extensions.join(', ')
     const checkExtension = (file) => {
+      log('check extension')
       if (extensions && !extensions.includes(file.extension)) {
+        log(extensions, file.extension)
         return i18nFactory('filesCollection.invalidExtension', { allowed: allowedExtensions })
       }
     }
 
     const checkUser = (context) => {
-      const user = context.user()
+      log('check user', context.user, context.userId)
+      const user = context.user && context.user()
       if (validateUser && !validateUser(user)) {
         return i18nFactory('filesCollection.permissionDenied')
       }
     }
 
     function beforeUpload (file) {
+      log('before upload')
       const self = this
 
       const sizeChecked = checkSize(file)
@@ -62,6 +76,7 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
     }
 
     function afterUpload (file) {
+      log('after upload')
       const self = this
       const Collection = self.collection
       const handleErr = err => {
@@ -69,12 +84,14 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
         self.unlink(Collection.findOne(file._id)) // Unlink files from FS
       }
 
+      log('check user')
       const userChecked = checkUser(self)
       if (typeof userChecked === 'undefined') {
         return handleErr(new Error(userChecked))
       }
 
       if (validateMime) {
+        log('validate mime')
         try {
           Promise.await(validateMime.call(self, file))
         } catch (mimeErr) {
@@ -85,6 +102,7 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       // here you could manipulate your file
       // and create a new version, for example a scaled 'thumbnail'
       if (transformVersions) {
+        log('transformVersions')
         try {
           Promise.await(transformVersions.call(self, file))
         } catch (transformErr) {
@@ -94,6 +112,7 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
 
       // then we read all versions we have got so far
       Object.keys(file.versions).forEach(versionName => {
+        log(`move ${file.name} (${versionName}) to bucket [${bucketName}]`)
         const metadata = { ...file.meta, versionName, fileId: file._id }
         fs.createReadStream(file.versions[versionName].path)
 
@@ -121,29 +140,41 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
 
     function interceptDownload (http, file, versionName) {
       const self = this
-      const { gridFsFileId } = file.versions[versionName].meta || {}
-      if (gridFsFileId) {
-        const gfsId = createObjectId({ gridFsFileId })
-        const readStream = bucket.openDownloadStream(gfsId)
-        readStream.on('data', (data) => {
-          http.response.write(data)
-        })
+      log('interceptDownload', file.name, versionName)
+      const targetVersion = file.versions[versionName] || file.versions['original']
 
-        readStream.on('end', () => {
-          http.response.end('end')
-        })
-
-        readStream.on('error', () => {
-          // not found probably
-          // eslint-disable-next-line no-param-reassign
-          http.response.statusCode = 404
-          http.response.end('not found')
-        })
-
-        http.response.setHeader('Cache-Control', self.cacheControl)
-        http.response.setHeader('Content-Disposition', `inline; filename="${file.name}"`)
+      if (!targetVersion) {
+        log(`could not find any file reference for version ${versionName} or original`)
+        return false
       }
-      return Boolean(gridFsFileId) // Serve file from either GridFS or FS if it wasn't uploaded yet
+
+      const { gridFsFileId } = (targetVersion.meta || {})
+      if (!gridFsFileId) {
+        log('could not get gridFsFileId from target version', targetVersion.meta)
+        return false
+      }
+
+      const gfsId = createObjectId({ gridFsFileId })
+      const readStream = bucket.openDownloadStream(gfsId)
+      readStream.on('data', (data) => {
+        http.response.write(data)
+      })
+
+      readStream.on('end', () => {
+        http.response.end()
+      })
+
+      readStream.on('error', () => {
+        // not found probably
+        // eslint-disable-next-line no-param-reassign
+        log('file not found, exist with 404 response')
+        http.response.statusCode = 404
+        http.response.end('not found')
+      })
+
+      http.response.setHeader('Cache-Control', self.cacheControl)
+      http.response.setHeader('Content-Disposition', getContentDisposition(file.name, http?.params?.query?.download))
+      return true
     }
 
     function afterRemove (files) {
@@ -161,13 +192,16 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
     const productConfig = Object.assign({
       debug: Meteor.isDevelopment && debug,
       onBeforeUpload: beforeUpload,
-      onAfterUpload: Meteor.isServer && afterUpload,
+      onAfterUpload: afterUpload,
       allowClientCode: false, // Disallow remove files from Client
-      interceptDownload: Meteor.isServer && interceptDownload,
-      onBeforeRemove: Meteor.isServer && beforeRemove,
+      interceptDownload: interceptDownload,
+      onBeforeRemove: beforeRemove,
       onAfterRemove: afterRemove
     }, config)
 
-    return new FilesCollection(config)
+    log('productconfig:')
+    log(productConfig)
+
+    return new FilesCollection(productConfig)
   }
 }
