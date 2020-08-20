@@ -1,10 +1,10 @@
 Package.describe({
-  name: 'leaonline:files-collection-factory',
+  name: 'leaonline:grid-factory',
   version: '1.0.0',
   // Brief, one-line summary of the package.
-  summary: 'Create FilesCollections. Lightweight. Simple.',
+  summary: 'Create FilesCollections with GridFS storage. Lightweight. Simple.',
   // URL to the Git repository containing the source code for this package.
-  git: '',
+  git: 'git@github.com:leaonline/grid-factory.git',
   // By default, Meteor will default to using README.md for documentation.
   // To avoid submitting documentation, set this field to null.
   documentation: 'README.md'
@@ -15,13 +15,13 @@ Package.onUse(function (api) {
   api.use('ecmascript')
   api.use('check')
   api.use('ostrio:files', ['server', 'client'], { weak: true })
-  api.mainModule('files-collection-factory-client.js', 'client')
-  api.mainModule('files-collection-factory-server.js', 'server')
+  api.mainModule('grid-factory-client.js', 'client')
+  api.mainModule('grid-factory-server.js', 'server')
 })
 
 Package.onTest(function (api) {
   api.use('ecmascript')
   api.use('tinytest')
-  api.use('leaonline:files-collection-factory')
-  api.mainModule('files-collection-factory-tests.js')
+  api.use('leaonline:grid-factory')
+  api.mainModule('grid-factory-tests.js')
 })

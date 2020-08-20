@@ -2,24 +2,52 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import { FilesCollection } from 'meteor/ostrio:files'
 import { getContentDisposition } from './lib/server/getContentDisposition'
+import { getGridFsFileId } from './lib/server/getGridFsFileId'
 
-export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, defaultBucket, createObjectId, debug }) => {
+/**
+ * Craetes a new factory function to create GridFS-backed FilesCollections.
+ * @param i18nFactory {Function} a Function that gets an i18n id + options and may return a translated String
+ * @param fs The node file system, injectable for convenience reasons (testing, package deps etc.)
+ * @param bucketFactory {Function} A function that returns a valid GridFS bucket by name
+ * @param defaultBucket {String} A name for the defaultBucket.
+ * @param createObjectId {Function} A function that transform a gridfs id to a valid ObjectId
+ * @param onError {Function} A function that receives an error, if any occurred
+ * @param debug {Boolean} A flag used to log debug messages to the console
+ * @return {function({bucketName?: *, maxSize?: *, extensions?: *, validateUser?: *, validateMime?: *, transformVersions?: *, config?: *}): FilesCollection} Factory Function
+ */
+export const createGridFilesFactory = ({ i18nFactory, fs, bucketFactory, defaultBucket, createObjectId, onError, debug }) => {
   check(i18nFactory, Function)
   check(fs, Object)
   check(bucketFactory, Function)
   check(defaultBucket, String)
   check(createObjectId, Function)
+  check(onError, Match.Maybe(Function))
   check(debug, Match.Maybe(Boolean))
 
   const log = (...args) => Meteor.isDevelopment && debug && console.info('[FilesCollectionFactory]:', ...args)
   log('set default bucket', defaultBucket)
 
-  return ({ bucketName, maxSize, extensions, validateUser, validateMime, onBeforeUpload, transformVersions, ...config }) => {
+  const abstractOnError = onError || (e => console.error(e))
+
+  /**
+   *
+   * @param bucketName
+   * @param maxSize
+   * @param extensions
+   * @param validateUser
+   * @param validateMime
+   * @param transformVersions
+   * @param onError {Function} A function that receives an error, if any occurred, overrides onError from the abstract level
+   * @param config override any parameteor for the original FilesCollection constructor
+   * @return {FilesCollection}
+   */
+  const factory = ({ bucketName, maxSize, extensions, validateUser, validateMime, transformVersions, onError, ...config }) => {
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
 
     log('create files collection', config.collectionName)
 
+    const onErrorHook = onError || abstractOnError
     const bucket = bucketFactory(bucketName || defaultBucket)
     const maxSizeKb = maxSize && (maxSize / 1024000)
 
@@ -42,10 +70,31 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       }
     }
 
-    const checkUser = (context) => {
-      log('check user', context.user, context.userId)
-      const user = context.user && context.user()
-      if (validateUser && !validateUser(user)) {
+    const checkUser = (context, file) => {
+      // skip if we don't validate users at all
+      if (!validateUser) {
+        log('checkUser skipped')
+        return
+      }
+
+      let hasPermission
+
+      try {
+        log('checkUser', context.user, context.userId)
+        // we first try to get the current user from the cookies
+        // since FilesCollection requires cookies to set the current user
+        // if the user exists, we need to pass it with the current file to the hook
+        // and wait for a truthy/falsy return value to estimate permission
+        const user = context.user && context.user()
+        hasPermission = user && validateUser(user, file)
+      } catch (validationError) {
+        // we need to catch errors, because we can't control the hook environment
+        onErrorHook(validationError)
+        hasPermission = false
+      }
+
+      // if validation failed on any level we return the translated reason for the fail
+      if (!hasPermission) {
         return i18nFactory('filesCollection.permissionDenied')
       }
     }
@@ -60,18 +109,15 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       const extensionChecked = checkExtension(file)
       if (typeof extensionChecked !== 'undefined') return extensionChecked
 
-      const userChecked = checkUser(self)
+      const userChecked = checkUser(self, file)
       if (typeof userChecked !== 'undefined') return userChecked
-
-      const customCheck = onBeforeUpload && onBeforeUpload.call(self, file)
-      if (typeof customCheck !== 'undefined') return customCheck
 
       return true
     }
 
-    function beforeRemove () {
+    function beforeRemove (file) {
       const self = this
-      const userChecked = checkUser(self)
+      const userChecked = checkUser(self, file)
       return typeof userChecked === 'undefined'
     }
 
@@ -79,13 +125,17 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       log('after upload')
       const self = this
       const Collection = self.collection
+
+      // this function passes any occurring error to the onError hook
+      // and also unlinks the file from the FS, because we can't be sure
+      // if it's still valid to continue to work with it.
       const handleErr = err => {
-        console.error(err)
+        onErrorHook(err)
         self.unlink(Collection.findOne(file._id)) // Unlink files from FS
       }
 
       log('check user')
-      const userChecked = checkUser(self)
+      const userChecked = checkUser(self, file)
       if (typeof userChecked === 'undefined') {
         return handleErr(new Error(userChecked))
       }
@@ -138,19 +188,19 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       })
     }
 
-    function interceptDownload (http, file, versionName) {
+    function onProtected (file) {
+      const self = this
+      const userChecked = checkUser(self, file)
+      return typeof userChecked === 'undefined'
+    }
+
+    function interceptDownload (http, file, versionName = 'original') {
       const self = this
       log('interceptDownload', file.name, versionName)
-      const targetVersion = file.versions[versionName] || file.versions['original']
 
-      if (!targetVersion) {
-        log(`could not find any file reference for version ${versionName} or original`)
-        return false
-      }
-
-      const { gridFsFileId } = (targetVersion.meta || {})
+      const gridFsFileId = getGridFsFileId(file.versions, versionName)
       if (!gridFsFileId) {
-        log('could not get gridFsFileId from target version', targetVersion.meta)
+        log('could not get gridFsFileId from ANY version')
         return false
       }
 
@@ -164,10 +214,10 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
         http.response.end()
       })
 
-      readStream.on('error', () => {
+      readStream.on('error', err => {
+        onErrorHook(err)
         // not found probably
         // eslint-disable-next-line no-param-reassign
-        log('file not found, exist with 404 response')
         http.response.statusCode = 404
         http.response.end('not found')
       })
@@ -183,7 +233,7 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
           const gridFsFileId = (file.versions[versionName].meta || {}).gridFsFileId
           if (gridFsFileId) {
             const gfsId = createObjectId({ gridFsFileId })
-            bucket.delete(gfsId, err => { if (err) console.error(err) })
+            bucket.delete(gfsId, onErrorHook)
           }
         })
       })
@@ -196,7 +246,8 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
       allowClientCode: false, // Disallow remove files from Client
       interceptDownload: interceptDownload,
       onBeforeRemove: beforeRemove,
-      onAfterRemove: afterRemove
+      onAfterRemove: afterRemove,
+      protected: onProtected
     }, config)
 
     log('productconfig:')
@@ -204,4 +255,8 @@ export const createFilesCollectionFactory = ({ i18nFactory, fs, bucketFactory, d
 
     return new FilesCollection(productConfig)
   }
+
+  log(`factory created for default bucket [${defaultBucket}]`)
+
+  return factory
 }

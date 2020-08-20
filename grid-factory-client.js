@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { FilesCollection } from 'meteor/ostrio:files'
 
-export const createFilesCollectionFactory = ({ i18nFactory, debug }) => {
+export const createGridFilesFactory = ({ i18nFactory, debug }) => {
   return ({ maxSize, extensions, validateUser, ...config }) => {
     const maxSizeKb = maxSize / 1024000
     const checkSize = (file) => {
