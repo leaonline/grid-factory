@@ -84,11 +84,28 @@ Hoever, you can hook into this process, too:
 
 ## Getting started
 
-Install this package via
+### 1. Install this package via
 
 ```bash
-$ meteor add leaonline:files-collection-factory
+$ meteor add leaonline:files-collection-factory ostrio:files
 ```
+
+We decoupled this package from `ostrio:files` so your host project can manage the versioning.
+
+### 2. Optionally install packages for mime-check and transformations
+
+If you want to check the mime you can use packages like `mmmagic` and `mime-types` to check for the correct mime type.
+Of course you can implement your mime-check a total different way, too.
+
+```bash
+$ meteor npm install --save mmmagic mime-types
+```
+
+If you want to transform your images or videos you also need the respective packages for that.
+Often you will also have to install additional software / packages on your host OS, since the npm packages
+(e.g. for image magick / graphics magic) are usually just wrappers for the OS-level packages. 
+
+### 3. Import the abstract factory
 
 The package exports different APIs for client and server but you import it the same way on server and client:
 
@@ -99,7 +116,7 @@ import { createGridFilesFactory } from 'meteor/leaonline:grid-factory'
 From here you have to consider the [FilesCollection architecture](https://github.com/VeliovGroup/Meteor-Files/blob/master/docs/constructor.md)
 in order to manage access, post processing, removal etc.
 
-## Server side
+### 4. Create a server side FilesCollection factory
 
 On the server side you can use the following abstract factory api:
 
@@ -110,11 +127,27 @@ On the server side you can use the following abstract factory api:
   bucketFactory: Function, // a function that returns a gridFS bucket
   defaultBucket: String, // a default name for the bucket to be used
   createObjectId: Function, // a function that creates an Object Id by a given GridFS id
-  debug: Boolean
-}) => Function
+  onError: Function, // logs errors for all collections across all factories
+  debug: Boolean,
+    ...config // all valid config, that can be passed to the FilesCollection server constructor
+}) => Function => FilesCollection
 ```
 
-### Minimal example
+The factory Function that is returned contains the following api:
+
+```javascript
+({
+  bucketName: String, // override the defaultBucket, if desired
+  maxSize: Number, // number in bytes to limit the maximum size for files of this collection
+  extensions: [String], // a list of supported extensions
+  validateUser: Function, // a Function that checks permission of the current user/file and returns falsy/truthy
+  validateMime: Function, // async Function that checks permission of the current file/mime and returns falsy/truthy
+  transformVersions: Function, // async Function that transforms the file to different versions
+  onError: Function // logs errors, overrides onError from abstract factory
+}) => FilesCollection
+```
+
+#### Minimal example
 
 The following example shows a minimal abstract GridFactory:
 
@@ -135,4 +168,14 @@ const createFilesCollection = createGridFilesFactory({ i18nFactory, fs, bucketFa
 
 
 
-## Client side 
+### 5. Create a client side factory 
+
+On the server side you have less options to pass to the API:
+
+```javascript
+({
+  i18nFactory: Function, // translator function, str => translatedStr
+  debug: Boolean,
+  ...config // all valid config, that can be passed to the FilesCollection client constructor
+}) => Function => FilesCollection
+```
