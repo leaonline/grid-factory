@@ -14,14 +14,20 @@ Package.onUse(function (api) {
   api.versionsFrom('1.10.2')
   api.use('ecmascript')
   api.use('check')
-  api.use('ostrio:files', ['server', 'client'], { weak: true })
+  api.use('ostrio:files@1.0.0', ['server', 'client'], { weak: true })
   api.mainModule('grid-factory-client.js', 'client')
   api.mainModule('grid-factory-server.js', 'server')
 })
 
 Package.onTest(function (api) {
+  Npm.depends({
+    chai: '4.2.0'
+  })
   api.use('ecmascript')
   api.use('tinytest')
+  api.use('random')
+  api.use('ostrio:files')
+  api.use('meteortesting:mocha')
   api.use('leaonline:grid-factory')
   api.mainModule('grid-factory-tests.js')
 })

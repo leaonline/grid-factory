@@ -162,10 +162,41 @@ const i18nFactory = (...args) => i18n.get(...args)
 const createObjectId = ({ gridFsFileId }) => new MongoInternals.NpmModule.ObjectID(gridFsFileId)
 const bucketFactory = bucketName => 
   new MongoInternals.NpmModule.GridFSBucket(MongoInternals.defaultRemoteCollectionDriver().mongo.db, { bucketName })
+const defaultBucket = 'fs' // resolves to fs.files / fs.chunks as default
+const onError = error => console.error(error)
 
-const createFilesCollection = createGridFilesFactory({ i18nFactory, fs, bucketFactory, createObjectId, debug })
+const createFilesCollection = createGridFilesFactory({ i18nFactory, fs, bucketFactory, defaultBucket, createObjectId, onError, debug })
+const ProfileImages = createFilesCollection({
+  collectionName: 'profileImages',
+  bucketName: 'images', // put image collections in the 'images' bucket
+  maxSize: 3072000, // 3 MB max
+  validateUser: function (userId, file, type) {
+    // is this a valid and registered user?
+    if (!userId || Meteor.users.find(userId).count() !== 1) {
+      return false
+    }
+    
+    const isOwner = userId === file.userId
+    const isAdmin = ...
+    const isAllowedToDownload =  ...
+    
+    if (type === 'upload') {
+      return Roles.userIsInRole(userId, 'can-upload', 'mydomain.com') // example of using roles
+    }
+    
+    if (type === 'download') {
+      return isOwner || isAdmin || isAllowedToDownload // custom flags
+    }
+    
+    if (type === 'remove') {
+     // allow only owner to remove the file
+     return isOwner || isAdmin
+    }
+    
+    throw new Error('unexpected code reach')
+  }
+})
 ```
-
 
 
 ### 5. Create a client side factory 
@@ -178,4 +209,18 @@ On the server side you have less options to pass to the API:
   debug: Boolean,
   ...config // all valid config, that can be passed to the FilesCollection client constructor
 }) => Function => FilesCollection
+```
+
+The factory Function that is returned contains the following api:
+
+```javascript
+({
+  bucketName: String, // override the defaultBucket, if desired
+  maxSize: Number, // number in bytes to limit the maximum size for files of this collection
+  extensions: [String], // a list of supported extensions
+  validateUser: Function, // a Function that checks permission of the current user/file and returns falsy/truthy
+  validateMime: Function, // async Function that checks permission of the current file/mime and returns falsy/truthy
+  transformVersions: Function, // async Function that transforms the file to different versions
+  onError: Function // logs errors, overrides onError from abstract factory
+}) => FilesCollection
 ```
