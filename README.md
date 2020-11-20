@@ -153,7 +153,7 @@ The following example shows a minimal abstract GridFactory:
 
 ```javascript
 import { MongoInternals } from 'meteor/mongo'
-import { createGridFactory } from 'meteor/leaonline:grid-factory'
+import { createGridFilesFactory } from 'meteor/leaonline:grid-factory'
 import { i18n } from '/path/to/i8n'
 import fs from 'fs'
 
