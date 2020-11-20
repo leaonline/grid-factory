@@ -51,6 +51,7 @@ export const createGridFilesFactory = ({ i18nFactory, fs, bucketFactory, default
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
     check(debug, Match.Maybe(Boolean))
+    check(validateUser, Match.Maybe(Function))
 
     const factoryDebug = debug || abstractDebug
     const log = getLog(factoryDebug)
