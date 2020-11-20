@@ -15,7 +15,34 @@ you need a fine-tuned custom behavior.
 
 The abtract factory allows you to create configurations on a higher level that apply to all your FilesCollections,
 while you still can fine-tune on the collection level. Supports all constructor arguments of FilesCollection.
- 
+
+## Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Why such a specialized package?](#why-such-a-specialized-package)
+  - [What is covered / what is not (yet)](#what-is-covered--what-is-not-yet)
+    - [Creation](#creation)
+    - [`onBeforeUpload`](#onbeforeupload)
+    - [`onAfterUpload`](#onafterupload)
+    - [`protected`](#protected)
+    - [`interceptDownload`](#interceptdownload)
+    - [`onBeforeRemove`](#onbeforeremove)
+    - [`afterRemove`](#afterremove)
+- [Getting started](#getting-started)
+  - [1. Install this package via](#1-install-this-package-via)
+  - [2. Optionally install packages for mime-check and transformations](#2-optionally-install-packages-for-mime-check-and-transformations)
+  - [3. Import the abstract factory](#3-import-the-abstract-factory)
+  - [4. Create a server side FilesCollection factory](#4-create-a-server-side-filescollection-factory)
+    - [Minimal example](#minimal-example)
+  - [5. Create a client side factory](#5-create-a-client-side-factory)
+- [Changelog](#changelog)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Why such a specialized package?
 
 This package is designed for projects, that can't rely on third-party storages, because one or more of the following
@@ -224,3 +251,17 @@ The factory Function that is returned contains the following api:
   onError: Function // logs errors, overrides onError from abstract factory
 }) => FilesCollection
 ```
+
+## Changelog
+
+- 1.0.2
+  - getGridFsFileId fix bug searching fallback versions
+
+- 1.0.1
+  - allow skipping user validation for prototyping but raise a server warning
+  - README fix export name
+  - standardjs lint fix
+  
+## License
+
+MIT, see [LICENSE file](./LICENSE)
