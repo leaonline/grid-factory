@@ -1,4 +1,4 @@
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { FilesCollection } from 'meteor/ostrio:files'
 import { getLog } from './lib/both/getLog'
 import { getCheckSize } from './lib/both/getCheckSize'
@@ -56,7 +56,7 @@ export const createGridFilesFactory = ({ i18nFactory, fs, bucketFactory, default
     const factoryDebug = debug || abstractDebug
     const log = getLog(factoryDebug)
 
-    log(`create files collection [${ config.collectionName || config?.collection?._name}]`)
+    log(`create files collection [${config.collectionName || config?.collection?._name}]`)
     log(`use bucket [${bucketName || defaultBucket}]`)
     log(`use mime validation [${!!validateMime}]`)
     log(`use transform [${!!transformVersions}]`)

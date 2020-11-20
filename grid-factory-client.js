@@ -13,7 +13,7 @@ export const createGridFilesFactory = ({ i18nFactory, onError, debug }) => {
   return ({ maxSize, extensions, validateUser, onError, debug, ...config }) => {
     const factoryLevelDebug = debug || abstractLevelDebug
     const log = getLog(factoryLevelDebug)
-    log(`create files collection [${ config.collectionName || config?.collection?._name}]`)
+    log(`create files collection [${config.collectionName || config?.collection?._name}]`)
 
     const onErrorHook = onError || abstractOnError
     const checkSize = getCheckSize({ i18nFactory, maxSize, log })

@@ -1,5 +1,5 @@
 /* global describe it */
-import { expect } from 'chai'
+import { Meteor } from 'meteor/meteor'
 import { createGridFilesFactory } from 'meteor/leaonline:grid-factory'
 import { getLog } from './lib/both/getLog'
 import { getCheckUser } from './lib/both/getCheckUser'
@@ -11,7 +11,6 @@ const onServer = fct => Meteor.isServer && fct()
 const onClient = fct => Meteor.isCLient && fct()
 
 describe('lib', function () {
-
   describe(getLog.name, function () {
     it('is not implemented')
   })
@@ -29,14 +28,14 @@ describe('lib', function () {
   })
 
   onServer(function () {
-    import { getOnProtected } from './lib/server/getOnProtected'
-    import { getAfterUpload } from './lib/server/getAfterUpload'
-    import { getContentDisposition } from './lib/server/getContentDisposition'
-    import { getMoveToGrid } from './lib/server/getMoveToGrid'
-    import { getGridFsFileId } from './lib/server/getGridFsFileId'
-    import { getBeforeRemove } from './lib/server/getBeforeRemove'
-    import { getAfterRemove } from './lib/server/getAfterRemove'
-    import { getInterceptDownload } from './lib/server/getInterceptDownload'
+    const { getOnProtected } = require('./lib/server/getOnProtected')
+    const { getAfterUpload } = require('./lib/server/getAfterUpload')
+    const { getContentDisposition } = require('./lib/server/getContentDisposition')
+    const { getMoveToGrid } = require('./lib/server/getMoveToGrid')
+    const { getGridFsFileId } = require('./lib/server/getGridFsFileId')
+    const { getBeforeRemove } = require('./lib/server/getBeforeRemove')
+    const { getAfterRemove } = require('./lib/server/getAfterRemove')
+    const { getInterceptDownload } = require('./lib/server/getInterceptDownload')
 
     describe(getMoveToGrid.name, function () {
       it('is not implemented')
