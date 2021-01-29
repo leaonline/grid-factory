@@ -31,7 +31,7 @@ while you still can fine-tune on the collection level. Supports all constructor 
     - [`interceptDownload`](#interceptdownload)
     - [`onBeforeRemove`](#onbeforeremove)
     - [`afterRemove`](#afterremove)
-- [Getting started](#getting-started)
+- [Getting started](#getting-started)validateUser
   - [1. Install this package via](#1-install-this-package-via)
   - [2. Optionally install packages for mime-check and transformations](#2-optionally-install-packages-for-mime-check-and-transformations)
   - [3. Import the abstract factory](#3-import-the-abstract-factory)
@@ -197,7 +197,7 @@ const ProfileImages = createFilesCollection({
   collectionName: 'profileImages',
   bucketName: 'images', // put image collections in the 'images' bucket
   maxSize: 3072000, // 3 MB max
-  validateUser: function (userId, file, type) {
+  validateUser: function (userId, file, type, translate) {
     // is this a valid and registered user?
     if (!userId || Meteor.users.find(userId).count() !== 1) {
       return false
@@ -220,7 +220,7 @@ const ProfileImages = createFilesCollection({
      return isOwner || isAdmin
     }
     
-    throw new Error('unexpected code reach')
+    throw new Error(translate('unexpectedCodeReach'))
   }
 })
 ```
