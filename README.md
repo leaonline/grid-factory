@@ -252,8 +252,22 @@ The factory Function that is returned contains the following api:
 }) => FilesCollection
 ```
 
+## Tests
+
+If you want to run the tests locally, you need to run the following command
+(assuming you are in the directory of this package): 
+
+```bash
+$ TEST_WATCH=1 TEST_CLIENT=1 TEST_SERVER=1 meteor test-packages ./ --driver-package meteortesting:mocha
+```
+
+The tests are server-only so you can 
+
 ## Changelog
 
+- 1.0.4
+  - bump dependencies
+  - added tests section to README
 - 1.0.2
   - getGridFsFileId fix bug searching fallback versions
 
