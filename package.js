@@ -2,7 +2,7 @@
 
 Package.describe({
   name: 'leaonline:grid-factory',
-  version: '1.0.4',
+  version: '1.1.0',
   // Brief, one-line summary of the package.
   summary: 'Create FilesCollections with GridFS storage. Lightweight. Simple.',
   // URL to the Git repository containing the source code for this package.
@@ -16,7 +16,8 @@ Package.onUse(function (api) {
   api.versionsFrom('1.10.2')
   api.use('ecmascript')
   api.use('check')
-  api.use('ostrio:files@2.0.0', ['server', 'client'], { weak: true })
+  api.use('mongo')
+  api.use('ostrio:files@1.0.0 || 2.0.0', ['server', 'client'], { weak: true })
   api.mainModule('grid-factory-client.js', 'client')
   api.mainModule('grid-factory-server.js', 'server')
 })
@@ -31,5 +32,6 @@ Package.onTest(function (api) {
   api.use('ostrio:files')
   api.use('meteortesting:mocha')
   api.use('leaonline:grid-factory')
-  api.mainModule('grid-factory-tests.js')
+  api.mainModule('tests/grid-factory-server.tests.js', 'server')
+  api.mainModule('tests/grid-factory-client.tests.js', 'client')
 })

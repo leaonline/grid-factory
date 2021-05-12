@@ -1,13 +1,18 @@
 # Meteor Grid-Factory
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![built with Meteor](https://img.shields.io/badge/Meteor%20package-1.1.0-green?logo=meteor&logoColor=white)](https://meteor.com)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![GitHub](https://img.shields.io/github/license/leaonline/publication-factory)
 
-Create **FilesCollections** with **GridFS** storage. Lightweight. Simple.
+Create **FilesCollections** with integrated **GridFS** storage. 
+Lightweight. Simple.
 
-With this package you can easily create multiple **`ostrio:files`** collections (FilesCollections) that work with [MongoDB's
+With this package you can easily create multiple **`ostrio:files`** collections 
+(*FilesCollections*) that work with [MongoDB's
 GridFS](https://docs.mongodb.com/manual/core/gridfs/) system **out-of-the-box**.
+
+**Background / reasons**
  
 It can be a real hassle to introduce gridFS as storage to your project. 
 This package aims to abstract common logic into an easy and accessible API while ensuring to let you override anything in case
@@ -56,9 +61,9 @@ applies:
 The use case may be not very common (Meteor + `ostrio:files` + GridFS) but if it's for you, 
 this package makes file handling much easier and consistent.
 
-### What is covered / what is not (yet)
+### What is covered by this package
 
-This package has some out-of-the-box functionality that covers the following points
+This package has some **out-of-the-box** functionality that covers the following points
 
 #### Creation
 
@@ -99,6 +104,7 @@ Hoever, you can hook into this process, too:
 - [ x ] streams the file from the GridFS bucket
 - [ x ] handles errors with an error response
 - [ x ] sets the correct content disposition, depending on `download` query attribute
+- [  ] 206 response streaming
 
 #### `onBeforeRemove`
 
@@ -252,26 +258,37 @@ The factory Function that is returned contains the following api:
 }) => FilesCollection
 ```
 
-## Tests
+## Contribution
 
-If you want to run the tests locally, you need to run the following command
-(assuming you are in the directory of this package): 
+Contributions are very welcomed! Please leave an issue before creating a PR in
+order to discuss feasibility and boundaries of a potential PR.
+
+## Testing
+
+We provide a special Meteor project for tests for you. I contains scripts for
+linting and testing out of the box:
 
 ```bash
-$ TEST_WATCH=1 TEST_CLIENT=1 TEST_SERVER=1 meteor test-packages ./ --driver-package meteortesting:mocha
+$ cd test-proxy
+$ meteor npm run setup
+$ meteor npm run lint:code
+$ meteor npm run lint:markdown
+$ meteor npm run test:watch
 ```
-
-The tests are server-only so you can 
 
 ## Changelog
 
-- 1.0.4
-  - bump dependencies
-  - added tests section to README
-- 1.0.2
+- **1.1.0**
+  - major bump for ostrio:files to support 1.x AND 2.x
+  - logging improved
+  - improved checks and loggins for all library functions
+  - tests added
+  - documentation improved
+  
+- **1.0.2**
   - getGridFsFileId fix bug searching fallback versions
 
-- 1.0.1
+- **1.0.1**
   - allow skipping user validation for prototyping but raise a server warning
   - README fix export name
   - standardjs lint fix
