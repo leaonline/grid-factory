@@ -5,27 +5,28 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![GitHub](https://img.shields.io/github/license/leaonline/publication-factory)
 
-Create **FilesCollections** with integrated **GridFS** storage. 
+Create **FilesCollections** with integrated **GridFS** storage.
 Lightweight. Simple.
 
-With this package you can easily create multiple **`ostrio:files`** collections 
+With this package you can easily create multiple **`ostrio:files`** collections
 (*FilesCollections*) that work with [MongoDB's
 GridFS](https://docs.mongodb.com/manual/core/gridfs/) system **out-of-the-box**.
 
-**Background / reasons**
- 
-It can be a real hassle to introduce gridFS as storage to your project. 
-This package aims to abstract common logic into an easy and accessible API while ensuring to let you override anything in case
-you need a fine-tuned custom behavior.
+## Background / reasons
 
-The abtract factory allows you to create configurations on a higher level that apply to all your FilesCollections,
-while you still can fine-tune on the collection level. Supports all constructor arguments of FilesCollection.
+It can be a real hassle to introduce gridFS as storage to your project.
+This package aims to abstract common logic into an easy and accessible API while
+ensuring to let you override anything in case you need a fine-tuned custom
+behavior.
+
+The abtract factory allows you to create configurations on a higher level that
+apply to all your FilesCollections, while you still can fine-tune on the
+collection level. Supports all constructor arguments of FilesCollection.
 
 ## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 
 - [Why such a specialized package?](#why-such-a-specialized-package)
   - [What is covered / what is not (yet)](#what-is-covered--what-is-not-yet)
@@ -50,26 +51,29 @@ while you still can fine-tune on the collection level. Supports all constructor 
 
 ## Why such a specialized package?
 
-This package is designed for projects, that can't rely on third-party storages, because one or more of the following
-applies:
+This package is designed for projects, that can't rely on third-party storages,
+because one or more of the following applies:
 
 - there are concerns about privacy or security when using a third party storage
 - the application has to be shipped in a "all-in-one" monolith
-- the app is intended for intranet use and connection to the "outside" is prohibited
+- the app is intended for intranet use and connection to the "outside" is
+  prohibited
 - whatever you can think of....
 
-The use case may be not very common (Meteor + `ostrio:files` + GridFS) but if it's for you, 
-this package makes file handling much easier and consistent.
+The use case may be not very common (Meteor + `ostrio:files` + GridFS) but if
+it's for you, this package makes file handling much easier and consistent.
 
 ### What is covered by this package
 
-This package has some **out-of-the-box** functionality that covers the following points
+This package has some **out-of-the-box** functionality that covers the following
+points.
 
 #### Creation
 
 - [ x ] Creating new `FilesCollection` instances
 - [ x ] Supporting full `FilesCollection` constructor
-- [ x ] Allows to override package internals by explicitly passing the hooks (`onAfterUpload` etc.)
+- [ x ] Allows to override package internals by explicitly passing the hooks
+       (`onAfterUpload` etc.)
 - [ x ] Code-splitting (server/client)
 - [ x ] Using GridFS buckets instead of deprecated `gridfs-stream`
 - [ x ] Adapter for translation
@@ -77,8 +81,9 @@ This package has some **out-of-the-box** functionality that covers the following
 
 #### `onBeforeUpload`
 
-This package has some some default behavior defined for the `onBeforeUpload` hook. 
-You can override it completely or hook into it's behavior using the following parameters:
+This package has some some default behavior defined for the `onBeforeUpload`
+hook. You can override it completely or hook into it's behavior using the
+following parameters:
 
 - [ x ] check file size via `maxSize` (Number)
 - [ x ] check file extensions via `extensions` ([String])
@@ -87,12 +92,13 @@ You can override it completely or hook into it's behavior using the following pa
 
 #### `onAfterUpload`
 
-The default behavior for `onAfterUpload` is to check the mime of the uploaded file and move it to the Grid.
-Hoever, you can hook into this process, too:
+The default behavior for `onAfterUpload` is to check the mime of the uploaded
+file and move it to the Grid. However, you can hook into this process, too:
 
 - [ x ] validate user via `validateUser` (Function)
 - [ x ] validate mime via `validateMime` (Function)
-- [ x ] transform additional versions (e.g. thumbnails, converted videos, etc.) via `transformVersions` (Function)
+- [ x ] transform additional versions (e.g. thumbnails, converted videos, etc.)
+        via `transformVersions` (Function)
 
 #### `protected`
 
@@ -100,11 +106,12 @@ Hoever, you can hook into this process, too:
 
 #### `interceptDownload`
 
-- [ x ] falls back to find a valid version, if request to a non-existent version fails
+- [ x ] falls back to find a valid version, if request to a non-existent version
+        fails
 - [ x ] streams the file from the GridFS bucket
 - [ x ] handles errors with an error response
 - [ x ] sets the correct content disposition, depending on `download` query attribute
-- [  ] 206 response streaming
+- [  ] TODO: 206 response streaming
 
 #### `onBeforeRemove`
 
@@ -114,16 +121,16 @@ Hoever, you can hook into this process, too:
 
 - [ x ] removes file, including all versions, from the GridFS and the FilesCollection
 
-
 ## Getting started
 
 ### 1. Install this package via
 
 ```bash
-$ meteor add leaonline:files-collection-factory ostrio:files
+meteor add leaonline:files-collection-factory ostrio:files
 ```
 
-We decoupled this package from `ostrio:files` so your host project can manage the versioning.
+We decoupled this package from `ostrio:files` so your host project can manage
+the versioning.
 
 ### 2. Optionally install packages for mime-check and transformations
 
@@ -131,12 +138,12 @@ If you want to check the mime you can use packages like `mmmagic` and `mime-type
 Of course you can implement your mime-check a total different way, too.
 
 ```bash
-$ meteor npm install --save mmmagic mime-types
+meteor npm install --save mmmagic mime-types
 ```
 
 If you want to transform your images or videos you also need the respective packages for that.
 Often you will also have to install additional software / packages on your host OS, since the npm packages
-(e.g. for image magick / graphics magic) are usually just wrappers for the OS-level packages. 
+(e.g. for image magick / graphics magic) are usually just wrappers for the OS-level packages.
 
 ### 3. Import the abstract factory
 
@@ -198,7 +205,16 @@ const bucketFactory = bucketName =>
 const defaultBucket = 'fs' // resolves to fs.files / fs.chunks as default
 const onError = error => console.error(error)
 
-const createFilesCollection = createGridFilesFactory({ i18nFactory, fs, bucketFactory, defaultBucket, createObjectId, onError, debug })
+const createFilesCollection = createGridFilesFactory({ 
+  i18nFactory, 
+  fs, 
+  bucketFactory, 
+  defaultBucket, 
+  createObjectId, 
+  onError, 
+  debug 
+})
+
 const ProfileImages = createFilesCollection({
   collectionName: 'profileImages',
   bucketName: 'images', // put image collections in the 'images' bucket
@@ -231,8 +247,7 @@ const ProfileImages = createFilesCollection({
 })
 ```
 
-
-### 5. Create a client side factory 
+### 5. Create a client side factory
 
 On the server side you have less options to pass to the API:
 
@@ -269,11 +284,11 @@ We provide a special Meteor project for tests for you. I contains scripts for
 linting and testing out of the box:
 
 ```bash
-$ cd test-proxy
-$ meteor npm run setup
-$ meteor npm run lint:code
-$ meteor npm run lint:markdown
-$ meteor npm run test:watch
+cd test-proxy
+meteor npm run setup
+meteor npm run lint:code
+meteor npm run lint:markdown
+meteor npm run test:watch
 ```
 
 ## Changelog
