@@ -1,5 +1,6 @@
 # Meteor Grid-Factory
 
+[![Test suite](https://github.com/leaonline/grid-factory/actions/workflows/test-suite.yml/badge.svg)](https://github.com/leaonline/grid-factory/actions/workflows/test-suite.yml)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![built with Meteor](https://img.shields.io/badge/Meteor%20package-1.1.0-green?logo=meteor&logoColor=white)](https://meteor.com)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -293,6 +294,9 @@ meteor npm run test:watch
 
 ## Changelog
 
+- **1.2.0**
+  - security patch to prevent server process crashing if mime check fails
+  
 - **1.1.0**
   - major bump for ostrio:files to support 1.x AND 2.x
   - logging improved
