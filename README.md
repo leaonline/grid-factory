@@ -297,7 +297,7 @@ meteor npm run test:watch
 - **1.3.0**
   - partial response (206) implemented
   - onAfterUpload is now fully async with correct order; return value will not
-    be returned until all hooks are called (validateMime, transformVersions, 
+    be returned until all hooks are called (validateMime, transformVersions,
     moveToGrid) and completed;
   - file has a `processingComplete` flag that will indicate when the
     `onAfterUpload` pipeline has been completed, which allows for example to
