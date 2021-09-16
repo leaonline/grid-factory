@@ -112,7 +112,7 @@ file and move it to the Grid. However, you can hook into this process, too:
 - [ x ] streams the file from the GridFS bucket
 - [ x ] handles errors with an error response
 - [ x ] sets the correct content disposition, depending on `download` query attribute
-- [  ] TODO: 206 response streaming
+- [ x ] 206 response streaming
 
 #### `onBeforeRemove`
 
@@ -293,6 +293,17 @@ meteor npm run test:watch
 ```
 
 ## Changelog
+
+- **1.3.0**
+  - partial response (206) implemented
+  - onAfterUpload is now fully async with correct order; return value will not
+    be returned until all hooks are called (validateMime, transformVersions, 
+    moveToGrid) and completed;
+  - file has a `processingComplete` flag that will indicate when the
+    `onAfterUpload` pipeline has been completed, which allows for example to
+    not link the file on the client until fully processed; make sure your schema
+    supports it!
+  - tests updated a lot
 
 - **1.2.0**
   - security patch to prevent server process crashing if mime check fails

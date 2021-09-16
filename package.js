@@ -2,7 +2,7 @@
 
 Package.describe({
   name: 'leaonline:grid-factory',
-  version: '1.2.0',
+  version: '1.3.0',
   // Brief, one-line summary of the package.
   summary: 'Create FilesCollections with GridFS storage. Lightweight. Simple.',
   // URL to the Git repository containing the source code for this package.
@@ -23,9 +23,6 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  Npm.depends({
-    chai: '4.2.0'
-  })
   api.use('ecmascript')
   api.use('tinytest')
   api.use('random')
