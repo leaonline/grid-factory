@@ -11,7 +11,7 @@ import './common/getCheckExtension.tests'
 import './common/getBeforeUpload.tests'
 
 describe(createGridFilesFactory.name, function () {
-  describe('server constructor', function () {
+  describe('client constructor', function () {
     it('is not implemented')
   })
 

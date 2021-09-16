@@ -47,17 +47,19 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
    * @param validateUser
    * @param validateMime
    * @param transformVersions
+   * @param usePartialResponse
    * @param onError {Function} A function that receives an error, if any occurred, overrides onError from the abstract level
    * @param config override any parameteor for the original FilesCollection constructor
    * @param debug {Boolean} debug flag for extended logging
    * @return {FilesCollection}
    */
-  const factory = ({ bucketName, maxSize, extensions, validateUser, validateMime, transformVersions, onError, debug, ...config }) => {
+  const factory = ({ bucketName, maxSize, extensions, validateUser, validateMime, transformVersions, usePartialResponse, onError, debug, ...config }) => {
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
     check(debug, Match.Maybe(Boolean))
     check(validateUser, Match.Maybe(Function))
     check(validateMime, Match.Maybe(Function))
+    check(usePartialResponse, Match.Maybe(Boolean))
     check(transformVersions, Match.Maybe(Function))
     check(onError, Match.Maybe(Function))
 
@@ -89,6 +91,10 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       checkUser,
       log
     })
+    const onInitiateUpload = async function (fileData) {
+      log('onInitiateUpload()')
+      fileData.processingComplete = false
+    }
     const moveToGrid = getMoveToGrid({ bucket, fs, log })
     const afterUpload = getAfterUpload({
       validateMime,
@@ -104,6 +110,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       bucket,
       createObjectId: abstractCreateObjectId,
       onErrorHook,
+      usePartialResponse,
       log
     })
 
@@ -118,6 +125,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
     const productConfig = Object.assign({
       debug: factoryDebug,
       onBeforeUpload: beforeUpload,
+      onInitiateUpload: onInitiateUpload,
       onAfterUpload: afterUpload,
       allowClientCode: false, // Disallow remove files from Client
       interceptDownload: interceptDownload,
