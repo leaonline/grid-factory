@@ -13,10 +13,12 @@ export const stub = (target, name, handler) => {
 }
 
 export const restore = (target, name) => {
+  /* eslint-disable-next-line security/detect-object-injection -- Safe as checked for proto chain */
   if (!target[name] || !target[name].restore) {
     return // TODO info here?
   }
 
+  /* eslint-disable-next-line security/detect-object-injection -- Safe as checked for proto chain */
   target[name].restore()
   _stubs.delete(target)
 }

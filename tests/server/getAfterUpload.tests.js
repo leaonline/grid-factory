@@ -8,6 +8,9 @@ import { stub, restoreAll } from '../utils/stub'
 const collection = mockCollection()
 
 describe(getAfterUpload.name, function () {
+  beforeEach(function () {
+    collection.remove({})
+  })
   afterEach(function () {
     restoreAll()
   })
@@ -18,34 +21,80 @@ describe(getAfterUpload.name, function () {
     const log = () => value
     const debug = true
     const expectedFile = { _id: Random.id() }
+    collection.insert(expectedFile)
+
+    const unlink = doc => {
+      expect(doc).to.deep.equal(expectedFile)
+    }
+    const remove = fileId => {
+      expect(fileId).to.equal(expectedFile._id)
+    }
 
     let mimeChecked = false
+    const validateMime = function (file, options) {
+      // check if environment is passed
+      const self = this
+      expect(self.value).to.equal(value)
+
+      // check if file is passed
+      expect(file).to.deep.equal(expectedFile)
+
+      // check if options are passed
+      expect(options.translate()).to.equal(value)
+      expect(options.log()).to.equal(value)
+
+      mimeChecked = true
+    }
 
     const onAfterUpload = getAfterUpload({
-      validateMime: function (file, options) {
-        // check if environment is passed
-        const self = this
-        expect(self.value).to.equal(value)
-
-        // check if file is passed
-        expect(file).to.deep.equal(expectedFile)
-
-        // check if options are passed
-        expect(options.translate()).to.equal(value)
-        expect(options.log()).to.equal(value)
-        expect(options.debug).to.equal(debug)
-
-        mimeChecked = true
-      },
+      validateMime,
       i18nFactory,
       log,
       debug
     })
 
-    const environment = { value, collection }
+    const environment = { value, collection, unlink, remove }
     const completed = await onAfterUpload.call(environment, expectedFile)
     expect(completed).to.equal(true)
     expect(mimeChecked).to.equal(true)
+  })
+  it('cancels if validateMime failed', async function () {
+    const value = Random.id(6)
+    const i18nFactory = () => value
+    const log = () => value
+    const debug = true
+    const expectedFile = { _id: Random.id() }
+    collection.insert(expectedFile)
+
+    let unlinkCalled = false
+    let removeCalled = false
+    const unlink = doc => {
+      expect(doc).to.deep.equal(expectedFile)
+      unlinkCalled = true
+    }
+    const remove = fileId => {
+      expect(fileId).to.equal(expectedFile._id)
+      removeCalled = true
+    }
+
+    const mimeChecked = false
+    const validateMime = function (/* file, options */) {
+      throw new Error('invalid mime')
+    }
+
+    const onAfterUpload = getAfterUpload({
+      validateMime,
+      i18nFactory,
+      log,
+      debug
+    })
+
+    const environment = { value, collection, unlink, remove }
+    const completed = await onAfterUpload.call(environment, expectedFile)
+    expect(completed).to.equal(false)
+    expect(mimeChecked).to.equal(false)
+    expect(unlinkCalled).to.equal(true)
+    expect(removeCalled).to.equal(true)
   })
   it('calls transformVersions if active', async function () {
     const value = Random.id(6)
@@ -68,7 +117,6 @@ describe(getAfterUpload.name, function () {
         // check if options are passed
         expect(options.translate()).to.equal(value)
         expect(options.log()).to.equal(value)
-        expect(options.debug).to.equal(debug)
 
         transformCalled = true
       },
@@ -81,6 +129,42 @@ describe(getAfterUpload.name, function () {
     const completed = await onAfterUpload.call(environment, expectedFile)
     expect(completed).to.equal(true)
     expect(transformCalled).to.equal(true)
+  })
+  it('removes file if transformVersions failed', async function () {
+    const value = Random.id(6)
+    const i18nFactory = () => value
+    const log = () => value
+    const debug = true
+    const expectedFile = { _id: Random.id() }
+    collection.insert(expectedFile)
+
+    const transformCalled = false
+    let unlinkCalled = false
+    let removeCalled = false
+    const unlink = doc => {
+      expect(doc).to.deep.equal(expectedFile)
+      unlinkCalled = true
+    }
+    const remove = fileId => {
+      expect(fileId).to.equal(expectedFile._id)
+      removeCalled = true
+    }
+
+    const onAfterUpload = getAfterUpload({
+      transformVersions: function (/* file, options */) {
+        throw new Error('transform failed')
+      },
+      i18nFactory,
+      log,
+      debug
+    })
+
+    const environment = { value, collection, unlink, remove }
+    const completed = await onAfterUpload.call(environment, expectedFile)
+    expect(completed).to.equal(false)
+    expect(transformCalled).to.equal(false)
+    expect(unlinkCalled).to.equal(true)
+    expect(removeCalled).to.equal(true)
   })
   it('calls moveToGrid if active', async function () {
     const value = Random.id(6)

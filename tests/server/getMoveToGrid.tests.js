@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import { getMoveToGrid } from '../../lib/server/getMoveToGrid'
 import { mockCollection } from '../utils/mockCollection'
 import Stream from 'stream'
+import { getProp } from '../../lib/utils/getProp'
 
 describe(getMoveToGrid.name, function () {
   it('moves all versions of a file to GridFS', async function () {
@@ -71,9 +72,10 @@ describe(getMoveToGrid.name, function () {
     }
 
     const filesCollection = {
-      unlink (file, version) {
+      unlink (file, versionName) {
         expect(file._id).to.equal(filesDoc._id)
-        expect(file.versions[version].meta.gridFsFileId).to.equal(value)
+        const version = getProp(file.versions, versionName)
+        expect(version.meta.gridFsFileId).to.equal(value)
         fileRemoved = true
       }
     }
