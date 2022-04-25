@@ -18,12 +18,12 @@
     "meteor-node-stubs": "^1.0.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9",
-    "@babel/eslint-parser": "^7.12.1",
-    "babel-plugin-istanbul": "^6.0.0",
-    "chai": "^4.2.0",
-    "eslint-plugin-security": "^1.4.0",
-    "markdownlint-cli": "^0.27.1",
+    "@babel/core": "^7.17.9",
+    "@babel/eslint-parser": "^7.17.0",
+    "babel-plugin-istanbul": "^6.1.1",
+    "chai": "^4.3.6",
+    "eslint-plugin-security": "^1.5.0",
+    "markdownlint-cli": "^0.31.1",
     "puppeteer": "^5.5.0",
     "simpl-schema": "^1.10.2",
     "sinon": "^9.2.1",
