@@ -115,7 +115,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
     })
 
     // remove
-    const beforeRemove = getBeforeRemove({ checkUser })
+    const beforeRemove = getBeforeRemove({ checkUser, log })
     const afterRemove = getAfterRemove({
       bucket,
       createObjectId: abstractCreateObjectId,
