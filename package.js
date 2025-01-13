@@ -13,11 +13,11 @@ Package.describe({
 })
 
 Package.onUse(function (api) {
-  api.versionsFrom('1.10.2')
+  api.versionsFrom(['1.6', '2.8.0', '3.0.1'])
   api.use('ecmascript')
   api.use('check')
   api.use('mongo')
-  api.use('ostrio:files@1.0.0 || 2.0.0', ['server', 'client'], { weak: true })
+  api.use('ostrio:files@2.0.0 || 3.0.0-beta.6', ['server', 'client'], { weak: true })
   api.mainModule('grid-factory-client.js', 'client')
   api.mainModule('grid-factory-server.js', 'server')
 })
