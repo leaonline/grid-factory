@@ -29,7 +29,10 @@ Package.onTest((api) => {
   api.use('tinytest')
   api.use('random')
   api.use('ostrio:files')
-  api.use(['lmieulet:meteor-coverage@5.0.0', 'meteortesting:mocha@3.3.0'])
+  api.use([
+    'lmieulet:meteor-coverage@5.0.0',
+    'meteortesting:mocha@3.3.0'
+  ])
   api.use('leaonline:grid-factory')
   api.mainModule('tests/grid-factory-server.tests.js', 'server')
   api.mainModule('tests/grid-factory-client.tests.js', 'client')
