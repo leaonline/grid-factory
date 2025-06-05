@@ -29,7 +29,7 @@ describe(getMoveToGrid.name, function () {
       }
     }
 
-    collection.insert(filesDoc)
+    await collection.insertAsync(filesDoc)
 
     let bucketWritten = false
     let fileRemoved = false
@@ -72,7 +72,7 @@ describe(getMoveToGrid.name, function () {
     }
 
     const filesCollection = {
-      unlink (file, versionName) {
+      async unlinkAsync (file, versionName) {
         expect(file._id).to.equal(filesDoc._id)
         const version = getProp(file.versions, versionName)
         expect(version.meta.gridFsFileId).to.equal(value)

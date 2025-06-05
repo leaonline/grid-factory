@@ -8,8 +8,8 @@ import { stub, restoreAll } from '../utils/stub'
 const collection = mockCollection()
 
 describe(getAfterUpload.name, function () {
-  beforeEach(function () {
-    collection.remove({})
+  beforeEach(async () => {
+    await collection.removeAsync({})
   })
   afterEach(function () {
     restoreAll()
@@ -21,12 +21,12 @@ describe(getAfterUpload.name, function () {
     const log = () => value
     const debug = true
     const expectedFile = { _id: Random.id() }
-    collection.insert(expectedFile)
+    await collection.insertAsync(expectedFile)
 
-    const unlink = doc => {
+    const unlinkAsync = async doc => {
       expect(doc).to.deep.equal(expectedFile)
     }
-    const remove = fileId => {
+    const removeAsync = async fileId => {
       expect(fileId).to.equal(expectedFile._id)
     }
 
@@ -53,7 +53,7 @@ describe(getAfterUpload.name, function () {
       debug
     })
 
-    const environment = { value, collection, unlink, remove }
+    const environment = { value, collection, unlinkAsync, removeAsync }
     const completed = await onAfterUpload.call(environment, expectedFile)
     expect(completed).to.equal(true)
     expect(mimeChecked).to.equal(true)
@@ -64,15 +64,15 @@ describe(getAfterUpload.name, function () {
     const log = () => value
     const debug = true
     const expectedFile = { _id: Random.id() }
-    collection.insert(expectedFile)
+    await collection.insertAsync(expectedFile)
 
     let unlinkCalled = false
     let removeCalled = false
-    const unlink = doc => {
+    const unlinkAsync = async doc => {
       expect(doc).to.deep.equal(expectedFile)
       unlinkCalled = true
     }
-    const remove = fileId => {
+    const removeAsync = async fileId => {
       expect(fileId).to.equal(expectedFile._id)
       removeCalled = true
     }
@@ -89,7 +89,7 @@ describe(getAfterUpload.name, function () {
       debug
     })
 
-    const environment = { value, collection, unlink, remove }
+    const environment = { value, collection, unlinkAsync, removeAsync }
     const completed = await onAfterUpload.call(environment, expectedFile)
     expect(completed).to.equal(false)
     expect(mimeChecked).to.equal(false)
@@ -136,16 +136,16 @@ describe(getAfterUpload.name, function () {
     const log = () => value
     const debug = true
     const expectedFile = { _id: Random.id() }
-    collection.insert(expectedFile)
+    await collection.insertAsync(expectedFile)
 
     const transformCalled = false
     let unlinkCalled = false
     let removeCalled = false
-    const unlink = doc => {
+    const unlinkAsync = async doc => {
       expect(doc).to.deep.equal(expectedFile)
       unlinkCalled = true
     }
-    const remove = fileId => {
+    const removeAsync = async fileId => {
       expect(fileId).to.equal(expectedFile._id)
       removeCalled = true
     }
@@ -159,7 +159,7 @@ describe(getAfterUpload.name, function () {
       debug
     })
 
-    const environment = { value, collection, unlink, remove }
+    const environment = { value, collection, unlinkAsync, removeAsync }
     const completed = await onAfterUpload.call(environment, expectedFile)
     expect(completed).to.equal(false)
     expect(transformCalled).to.equal(false)
@@ -213,7 +213,7 @@ describe(getAfterUpload.name, function () {
 
     const file = { _id: Random.id() }
     const environment = { collection }
-    stub(collection, 'update', () => called.push('update'))
+    stub(collection, 'updateAsync', () => called.push('update'))
     const completed = await onAfterUpload.call(environment, file)
     called.push('complete')
     expect(completed).to.equal(true)
@@ -229,14 +229,14 @@ describe(getAfterUpload.name, function () {
   it('sets the file as processingComplete once complete', async function () {
     const onAfterUpload = getAfterUpload({})
     const file = { _id: Random.id() }
-    collection.insert(file)
+    await collection.insertAsync(file)
     const environment = { collection }
     const completed = await onAfterUpload.call(environment, file)
     const updatedFile = collection.findOne(file._id)
     expect(updatedFile.processingComplete).to.equal(true)
     expect(completed).to.equal(true)
   })
-  it('removes the file on any catched error', async function () {
+  it('removes the file on any caught error', async function () {
     let errorHandlerPassed = false
     const onAfterUpload = getAfterUpload({
       validateMime () {
@@ -249,15 +249,15 @@ describe(getAfterUpload.name, function () {
       }
     })
     const file = { _id: Random.id() }
-    collection.insert(file)
+    await collection.insertAsync(file)
 
     let unlinkCalled = false
     let removeCalled = false
 
     const environment = {
       collection,
-      unlink () { unlinkCalled = true },
-      remove () { removeCalled = true }
+      async unlinkAsync () { unlinkCalled = true },
+      async removeAsync () { removeCalled = true }
     }
     const completed = await onAfterUpload.call(environment, file)
     expect(completed).to.equal(false)

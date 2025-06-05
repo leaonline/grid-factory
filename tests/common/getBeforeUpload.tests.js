@@ -3,8 +3,8 @@ import { Random } from 'meteor/random'
 import { expect } from 'chai'
 import { getBeforeUpload } from '../../lib/both/getBeforeUpload'
 
-describe(getBeforeUpload.name, function () {
-  it('defers all checks to externals', function () {
+describe(getBeforeUpload.name, () => {
+  it('defers all checks to externals', async () => {
     const env = { foo: Random.id() }
     const file = { foo: Random.id() }
     const beforeUpload = getBeforeUpload({
@@ -15,14 +15,14 @@ describe(getBeforeUpload.name, function () {
       checkExtension: file => {
         expect(file).to.deep.equal(file)
       },
-      checkUser: (env, file, type) => {
+      checkUser: async (env, file, type) => {
         expect(env).to.deep.equal(env)
         expect(file).to.deep.equal(file)
         expect(type).to.equal('upload')
       }
     })
 
-    const checked = beforeUpload.call(env, file)
+    const checked = await beforeUpload.call(env, file)
     expect(checked).to.equal(true)
   })
 })

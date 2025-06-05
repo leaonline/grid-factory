@@ -43,10 +43,12 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
     log(`create files collection [${config.collectionName || config?.collection?._name}]`)
 
     const onErrorHook = onError || abstractOnError
-    const checkSize = getCheckSize({ i18nFactory, maxSize, log })
-    const checkExtension = getCheckExtension({ i18nFactory, extensions, log })
-    const checkUser = getCheckUser({ log, i18nFactory, validateUser, onErrorHook })
-    const beforeUpload = getBeforeUpload({ log, checkUser, checkSize, checkExtension })
+    const beforeUpload = getBeforeUpload({
+      log,
+      checkUser: getCheckUser({ log, i18nFactory, validateUser, onErrorHook }),
+      checkSize: getCheckSize({ i18nFactory, maxSize, log }),
+      checkExtension: getCheckExtension({ i18nFactory, extensions, log })
+    })
 
     const factoryConfig = {
       debug: factoryLevelDebug,
