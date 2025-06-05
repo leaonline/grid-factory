@@ -9,20 +9,22 @@ Package.describe({
   git: 'git@github.com:leaonline/grid-factory.git',
   // By default, Meteor will default to using README.md for documentation.
   // To avoid submitting documentation, set this field to null.
-  documentation: 'README.md'
+  documentation: 'README.md',
 })
 
-Package.onUse(function (api) {
+Package.onUse((api) => {
   api.versionsFrom(['1.6', '2.8.0', '3.0.1'])
   api.use('ecmascript')
   api.use('check')
   api.use('mongo')
-  api.use('ostrio:files@2.0.0 || 3.0.0-rc.3', ['server', 'client'], { weak: true })
+  api.use('ostrio:files@2.0.0 || 3.0.0-rc.3', ['server', 'client'], {
+    weak: true,
+  })
   api.mainModule('grid-factory-client.js', 'client')
   api.mainModule('grid-factory-server.js', 'server')
 })
 
-Package.onTest(function (api) {
+Package.onTest((api) => {
   api.use('ecmascript')
   api.use('tinytest')
   api.use('random')

@@ -7,11 +7,12 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": ["packages/", "node_modules", ".meteor", ".github", ".git", "test-proxy/"]
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "space",
+		"indentWidth": 2
 	},
 	"organizeImports": {
 		"enabled": true
@@ -24,7 +25,10 @@
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "double"
+			"indentStyle": "space",
+			"indentWidth": 2,
+			"quoteStyle": "single",
+			"semicolons": "asNeeded"
 		}
 	}
 }

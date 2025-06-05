@@ -8,18 +8,18 @@ describe(getBeforeUpload.name, () => {
     const env = { foo: Random.id() }
     const file = { foo: Random.id() }
     const beforeUpload = getBeforeUpload({
-      log: out => expect(out).to.equal('before upload'),
-      checkSize: file => {
+      log: (out) => expect(out).to.equal('before upload'),
+      checkSize: (file) => {
         expect(file).to.deep.equal(file)
       },
-      checkExtension: file => {
+      checkExtension: (file) => {
         expect(file).to.deep.equal(file)
       },
       checkUser: async (env, file, type) => {
         expect(env).to.deep.equal(env)
         expect(file).to.deep.equal(file)
         expect(type).to.equal('upload')
-      }
+      },
     })
 
     const checked = await beforeUpload.call(env, file)

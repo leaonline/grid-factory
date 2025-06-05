@@ -4,13 +4,13 @@ import { expect } from 'chai'
 import { getBeforeRemove } from '../../lib/server/getBeforeRemove'
 import { expectThrow } from '../utils/expectThrow'
 
-describe(getBeforeRemove.name, function () {
+describe(getBeforeRemove.name, () => {
   const log = console.log
 
   it('throws if no checkUser function is passed', async () => {
     await expectThrow({
       fn: () => getBeforeRemove({}),
-      message: 'Match error: Expected function, got undefined'
+      message: 'Match error: Expected function, got undefined',
     })
   })
   it('returns true if user check is undefined', async () => {

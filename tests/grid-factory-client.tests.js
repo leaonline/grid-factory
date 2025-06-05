@@ -10,12 +10,12 @@ import './common/getCheckUser.tests'
 import './common/getCheckExtension.tests'
 import './common/getBeforeUpload.tests'
 
-describe(createGridFilesFactory.name, function () {
-  describe('client constructor', function () {
+describe(createGridFilesFactory.name, () => {
+  describe('client constructor', () => {
     it('is not implemented')
   })
 
-  describe('error hooks', function () {
+  describe('error hooks', () => {
     it('is not implemented')
   })
 })

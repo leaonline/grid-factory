@@ -1,5 +1,3 @@
 {
-  "include": [
-    "**/packages/lmieulet_meteor-coverage.js"
-  ]
+	"include": ["**/packages/lmieulet_meteor-coverage.js"]
 }

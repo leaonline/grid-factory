@@ -4,11 +4,11 @@ import { expect } from 'chai'
 import { getOnProtected } from '../../lib/server/getOnProtected'
 import { expectThrow } from '../utils/expectThrow'
 
-describe(getOnProtected.name, function () {
+describe(getOnProtected.name, () => {
   it('throws if no checkUser function is passed', async () => {
     await expectThrow({
       fn: () => getOnProtected({}),
-      message: 'Match error: Expected function, got undefined'
+      message: 'Match error: Expected function, got undefined',
     })
   })
   it('returns true if user check remains undefined', async () => {

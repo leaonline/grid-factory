@@ -9,7 +9,7 @@ import './common/getCheckUser.tests'
 import './common/getCheckExtension.tests'
 import './common/getBeforeUpload.tests'
 
-describe('lib/server', function () {
+describe('lib/server', () => {
   require('./server/getMoveToGrid.tests')
   require('./server/getAfterUpload.tests')
   require('./server/getOnProtected.tests')
@@ -20,45 +20,45 @@ describe('lib/server', function () {
   require('./server/getAfterRemove.tests')
 })
 
-describe(createGridFilesFactory.name, function () {
-  describe('server constructor', function () {
-    it('can be created with minimal args', function () {
+describe(createGridFilesFactory.name, () => {
+  describe('server constructor', () => {
+    it('can be created with minimal args', () => {
       const factory = createGridFilesFactory()
       expect(factory).to.be.a('function')
     })
-    it('allows an i18nFactory to be passed', function () {
+    it('allows an i18nFactory to be passed', () => {
       const factory = createGridFilesFactory({
-        i18nFactory: () => {}
+        i18nFactory: () => {},
       })
       expect(factory).to.be.a('function')
     })
-    it('allows fs to be passed', function () {
+    it('allows fs to be passed', () => {
       const factory = createGridFilesFactory({
-        fs: { createReadStream: () => {} }
+        fs: { createReadStream: () => {} },
       })
       expect(factory).to.be.a('function')
     })
-    it('allows fa bucket factory to be passed', function () {
+    it('allows fa bucket factory to be passed', () => {
       const factory = createGridFilesFactory({
-        bucketFactory: () => {}
+        bucketFactory: () => {},
       })
       expect(factory).to.be.a('function')
     })
-    it('allows a default bucket name to be passed', function () {
+    it('allows a default bucket name to be passed', () => {
       const factory = createGridFilesFactory({
-        defaultBucket: 'allFiles'
+        defaultBucket: 'allFiles',
       })
       expect(factory).to.be.a('function')
     })
-    it('allows a gridFsFileId factory to be passed', function () {
+    it('allows a gridFsFileId factory to be passed', () => {
       const factory = createGridFilesFactory({
-        createObjectId: () => {}
+        createObjectId: () => {},
       })
       expect(factory).to.be.a('function')
     })
-    it('allows an error hook to be passed', function () {
+    it('allows an error hook to be passed', () => {
       const factory = createGridFilesFactory({
-        onError: () => {}
+        onError: () => {},
       })
       expect(factory).to.be.a('function')
     })

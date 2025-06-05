@@ -1,39 +1,38 @@
 {
-  "name": "test-proxy",
-  "private": true,
-  "scripts": {
-    "start": "meteor run",
-    "ci": "npm ci && npm run test",
-    "setup": "mkdir -p packages && ln -sfn ../../ ./packages/grid-factory",
-    "lint:code": "npx @biomejs/biome lint ./",
-    "format:code": "npx @biomejs/biome format ./",
-    "lint:format-fix": "npx @biomejs/biome format --write ./",
-    "lint:markdown": "markdownlint \"./packages/grid-factory/**/*.md\" --config ./.markdownlint.json",
-    "lint:markdown-fix": "markdownlint --fix \"./packages/grid-factory/**/*.md\" --config ./.markdownlint.json",
-    "test": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer meteor test-packages --once --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=6776",
-    "test:watch": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer TEST_WATCH=1 meteor test-packages --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=6776",
-    "test:coverage": "TEST_BROWSER_DRIVER=puppeteer COVERAGE=1 COVERAGE_OUT_HTML=1 COVERAGE_OUT_LCOVONLY=1 BABEL_ENV=COVERAGE COVERAGE_APP_FOLDER=$(pwd)/ meteor test-packages --once --driver-package meteortesting:mocha $(pwd)/packages/grid-factory --port=6776"
-  },
-  "dependencies": {
-    "@babel/runtime": "^7.27.4",
-    "meteor-node-stubs": "^1.2.19"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.27.4",
-    "@biomejs/biome": "1.9.4",
-    "babel-plugin-istanbul": "^6.1.1",
-    "chai": "^5.2.0",
-    "markdownlint-cli": "^0.31.1",
-    "puppeteer": "^24.10.0",
-    "sinon": "^20.0.0"
-  },
-  "babel": {
-    "env": {
-      "COVERAGE": {
-        "plugins": [
-          "istanbul"
-        ]
-      }
-    }
-  }
+	"name": "test-proxy",
+	"private": true,
+	"scripts": {
+		"start": "meteor run",
+		"ci": "npm ci && npm run test",
+		"setup": "mkdir -p packages && ln -sfn ../../ ./packages/grid-factory",
+		"lint:code": "npx @biomejs/biome lint ../",
+		"lint:code-fix": "npx @biomejs/biome lint --write ../",
+		"format:code": "npx @biomejs/biome format ../",
+		"format:code-fix": "npx @biomejs/biome format --write ../",
+		"lint:markdown": "markdownlint \"./packages/grid-factory/**/*.md\" --config ./.markdownlint.json",
+		"lint:markdown-fix": "markdownlint --fix \"./packages/grid-factory/**/*.md\" --config ./.markdownlint.json",
+		"test": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer meteor test-packages --once --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=6776",
+		"test:watch": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer TEST_WATCH=1 meteor test-packages --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=6776",
+		"test:coverage": "TEST_BROWSER_DRIVER=puppeteer COVERAGE=1 COVERAGE_OUT_HTML=1 COVERAGE_OUT_LCOVONLY=1 BABEL_ENV=COVERAGE COVERAGE_APP_FOLDER=$(pwd)/ meteor test-packages --once --driver-package meteortesting:mocha $(pwd)/packages/grid-factory --port=6776"
+	},
+	"dependencies": {
+		"@babel/runtime": "^7.27.4",
+		"meteor-node-stubs": "^1.2.19"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.27.4",
+		"@biomejs/biome": "1.9.4",
+		"babel-plugin-istanbul": "^6.1.1",
+		"chai": "^5.2.0",
+		"markdownlint-cli": "^0.31.1",
+		"puppeteer": "^24.10.0",
+		"sinon": "^20.0.0"
+	},
+	"babel": {
+		"env": {
+			"COVERAGE": {
+				"plugins": ["istanbul"]
+			}
+		}
+	}
 }

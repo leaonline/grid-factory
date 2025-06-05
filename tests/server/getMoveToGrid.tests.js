@@ -3,11 +3,11 @@ import { Random } from 'meteor/random'
 import { expect } from 'chai'
 import { getMoveToGrid } from '../../lib/server/getMoveToGrid'
 import { mockCollection } from '../utils/mockCollection'
-import Stream from 'stream'
+import Stream from 'node:stream'
 import { getProp } from '../../lib/utils/getProp'
 
-describe(getMoveToGrid.name, function () {
-  it('moves all versions of a file to GridFS', async function () {
+describe(getMoveToGrid.name, () => {
+  it('moves all versions of a file to GridFS', async () => {
     const collection = mockCollection()
     const fileName = Random.id(5)
     const value = Random.id()
@@ -17,16 +17,16 @@ describe(getMoveToGrid.name, function () {
       name: fileName,
       path: `/files/${fileName}.ext`,
       meta: {
-        value: Random.id()
+        value: Random.id(),
       },
       versions: {
         original: {
-          path: `/files/${fileName}.ext`
+          path: `/files/${fileName}.ext`,
         },
         thumbnail: {
-          path: `/files/thumb-${fileName}.ext`
-        }
-      }
+          path: `/files/thumb-${fileName}.ext`,
+        },
+      },
     }
 
     await collection.insertAsync(filesDoc)
@@ -35,7 +35,7 @@ describe(getMoveToGrid.name, function () {
     let fileRemoved = false
 
     const bucket = {
-      openUploadStream (fileName, { contentType, metadata }) {
+      openUploadStream(fileName, { contentType, metadata }) {
         expect(fileName).to.equal(filesDoc.name)
         expect(contentType).to.equal(filesDoc.type)
         expect(metadata.value).to.equal(filesDoc.meta.value)
@@ -48,36 +48,42 @@ describe(getMoveToGrid.name, function () {
           next()
         }
 
-        setTimeout(() => writableStream.emit('finish', {
-          _id: { toHexString: () => value }
-        }), 10)
+        setTimeout(
+          () =>
+            writableStream.emit('finish', {
+              _id: { toHexString: () => value },
+            }),
+          10,
+        )
 
         return writableStream
-      }
+      },
     }
 
     const fs = {
-      createReadStream (path) {
-        if (path !== filesDoc.versions.original.path &&
-          path !== filesDoc.versions.thumbnail.path) {
+      createReadStream(path) {
+        if (
+          path !== filesDoc.versions.original.path &&
+          path !== filesDoc.versions.thumbnail.path
+        ) {
           expect.fail()
         }
 
         const readStream = new Stream.Readable({
-          read () {}
+          read() {},
         })
         readStream.push(value)
         return readStream
-      }
+      },
     }
 
     const filesCollection = {
-      async unlinkAsync (file, versionName) {
+      async unlinkAsync(file, versionName) {
         expect(file._id).to.equal(filesDoc._id)
         const version = getProp(file.versions, versionName)
         expect(version.meta.gridFsFileId).to.equal(value)
         fileRemoved = true
-      }
+      },
     }
 
     const log = () => {}
