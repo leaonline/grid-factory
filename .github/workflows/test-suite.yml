@@ -13,22 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4git
       with:
-        node-version: 14
+        node-version: 22
 
     - name: cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-node-14-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-node-22-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-node-14-
+          ${{ runner.os }}-node-22-
     - run: cd test-proxy && npm ci
-    - run: cd test-proxy && npm run lint:code
+    - run: cd test-proxy && npm run lint:code && npm run format:code
 
   lintdocs:
     name: documentation lint
@@ -36,20 +36,20 @@ jobs:
     needs: [lintcode]
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: setup node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 22
 
     - name: cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-node-14-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-node-22-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-node-14-
+          ${{ runner.os }}-node-22-
     - run: cd test-proxy && npm ci
     - run: cd test-proxy && npm run lint:markdown
 
@@ -59,18 +59,18 @@ jobs:
     needs: [lintcode,lintdocs]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup meteor
         uses: meteorengineer/setup-meteor@v1
         with:
-          meteor-release: '2.8.1'
+          meteor-release: '3.2.2'
 
       - name: cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-14-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-22-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-14-
+            ${{ runner.os }}-node-22-
       - run: cd test-proxy && npm run ci
