@@ -3,13 +3,13 @@ import { Random } from 'meteor/random'
 import { expect } from 'chai'
 import { getGridFsFileId } from '../../lib/server/getGridFsFileId'
 
-describe(getGridFsFileId.name, function () {
-  it('return a gridFsFileId if it is linked in meta for the given version', function () {
+describe(getGridFsFileId.name, () => {
+  it('return a gridFsFileId if it is linked in meta for the given version', () => {
     const gridFsFileId = Random.id()
     const versions = {
       foo: {
-        meta: { gridFsFileId }
-      }
+        meta: { gridFsFileId },
+      },
     }
 
     expect(getGridFsFileId(versions, 'foo')).to.equal(gridFsFileId)
@@ -19,13 +19,13 @@ describe(getGridFsFileId.name, function () {
     expect(getGridFsFileId({ any: { meta: {} } }, 'foo')).to.equal(undefined)
     expect(getGridFsFileId({ foo: { meta: {} } }, 'foo')).to.equal(undefined)
   })
-  it('searches in other versions as fallback', function () {
+  it('searches in other versions as fallback', () => {
     const gridFsFileId = Random.id()
     const versions = {
       foo: {},
       bar: {
-        meta: { gridFsFileId }
-      }
+        meta: { gridFsFileId },
+      },
     }
 
     expect(getGridFsFileId(versions, 'foo')).to.equal(gridFsFileId)

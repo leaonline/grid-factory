@@ -23,7 +23,7 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
   check(abstractOptions, Match.ObjectIncluding(abstractOptionsDef))
 
   const { i18nFactory, onError, debug } = abstractOptions
-  const abstractOnError = onError || (e => console.error(e))
+  const abstractOnError = onError || ((e) => console.error(e))
   const abstractLevelDebug = debug
 
   /**
@@ -37,22 +37,29 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
    * @return {FilesCollection}
    */
   const factoryFunction = (options = {}) => {
-    const { maxSize, extensions, validateUser, onError, debug, ...config } = options
+    const { maxSize, extensions, validateUser, onError, debug, ...config } =
+      options
     const factoryLevelDebug = debug || abstractLevelDebug
     const log = getLog(factoryLevelDebug)
-    log(`create files collection [${config.collectionName || config?.collection?._name}]`)
+    log(
+      `create files collection [${config.collectionName || config?.collection?._name}]`,
+    )
 
     const onErrorHook = onError || abstractOnError
-    const checkSize = getCheckSize({ i18nFactory, maxSize, log })
-    const checkExtension = getCheckExtension({ i18nFactory, extensions, log })
-    const checkUser = getCheckUser({ log, i18nFactory, validateUser, onErrorHook })
-    const beforeUpload = getBeforeUpload({ log, checkUser, checkSize, checkExtension })
+    const beforeUpload = getBeforeUpload({
+      log,
+      checkUser: getCheckUser({ log, i18nFactory, validateUser, onErrorHook }),
+      checkSize: getCheckSize({ i18nFactory, maxSize, log }),
+      checkExtension: getCheckExtension({ i18nFactory, extensions, log }),
+    })
 
     const factoryConfig = {
       debug: factoryLevelDebug,
-      onbeforeunloadMessage: Meteor.isClient && (() => i18nFactory('filesCollection.onbeforeunloadMessage')),
+      onbeforeunloadMessage:
+        Meteor.isClient &&
+        (() => i18nFactory('filesCollection.onbeforeunloadMessage')),
       onBeforeUpload: beforeUpload,
-      allowClientCode: false // Disallow remove files from Client
+      allowClientCode: false, // Disallow remove files from Client
     }
 
     const productConfig = Object.assign(factoryConfig, config)
@@ -68,5 +75,5 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
 const abstractOptionsDef = {
   i18nFactory: Match.Maybe(Function),
   onError: Match.Maybe(Function),
-  debug: Match.Maybe(Boolean)
+  debug: Match.Maybe(Boolean),
 }

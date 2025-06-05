@@ -3,34 +3,36 @@ import { Random } from 'meteor/random'
 import { expect } from 'chai'
 import { getAfterRemove } from '../../lib/server/getAfterRemove'
 
-describe(getAfterRemove.name, function () {
-  it('removes all remaining versions from GridFS', function () {
+describe(getAfterRemove.name, () => {
+  it('removes all remaining versions from GridFS', () => {
     const gridFsFileId = Random.id()
-    const onErrorHook = err => expect.fail(err)
+    const onErrorHook = (err) => expect.fail(err)
     let deleted = false
     const bucket = {
-      delete (gfsId, onError) {
+      delete(gfsId, onError) {
         expect(onError).to.equal(onErrorHook)
         expect(gfsId).to.equal(gridFsFileId)
         deleted = true
-      }
+      },
     }
 
-    const files = [{
-      _id: Random.id(),
-      versions: {
-        orginal: {
-          meta: {
-            gridFsFileId
-          }
-        }
-      }
-    }]
+    const files = [
+      {
+        _id: Random.id(),
+        versions: {
+          orginal: {
+            meta: {
+              gridFsFileId,
+            },
+          },
+        },
+      },
+    ]
     const createObjectId = ({ gridFsFileId }) => gridFsFileId
     const onAfterRemove = getAfterRemove({
       bucket,
       createObjectId,
-      onErrorHook
+      onErrorHook,
     })
 
     onAfterRemove(files)

@@ -25,7 +25,15 @@ import { getDefaultGridFsFileId } from './lib/utils/getDefaultGridFsFileId'
  * @param debug {Boolean} A flag used to log debug messages to the console
  * @return {function(options): FilesCollection} Factory Function
  */
-export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'), bucketFactory, defaultBucket, createObjectId, onError, debug } = {}) => {
+export const createGridFilesFactory = ({
+  i18nFactory = (x) => x,
+  fs = require('node:fs'),
+  bucketFactory,
+  defaultBucket,
+  createObjectId,
+  onError,
+  debug,
+} = {}) => {
   check(i18nFactory, Function)
   check(fs, Match.ObjectIncluding({ createReadStream: Function }))
   check(bucketFactory, Match.Maybe(Function))
@@ -35,7 +43,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
   check(debug, Match.Maybe(Boolean))
 
   const abstractDebug = debug
-  const abstractOnError = onError || (e => console.error(e))
+  const abstractOnError = onError || ((e) => console.error(e))
   const abstractLog = getLog(abstractDebug)
   const abstractBucketFactory = bucketFactory || getDefaultBucket
   const abstractCreateObjectId = createObjectId || getDefaultGridFsFileId
@@ -53,7 +61,18 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
    * @param debug {Boolean} debug flag for extended logging
    * @return {FilesCollection}
    */
-  const factory = ({ bucketName, maxSize, extensions, validateUser, validateMime, transformVersions, usePartialResponse, onError, debug, ...config }) => {
+  const factory = ({
+    bucketName,
+    maxSize,
+    extensions,
+    validateUser,
+    validateMime,
+    transformVersions,
+    usePartialResponse,
+    onError,
+    debug,
+    ...config
+  }) => {
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
     check(debug, Match.Maybe(Boolean))
@@ -66,7 +85,9 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
     const factoryDebug = debug || abstractDebug
     const log = getLog(factoryDebug)
 
-    log(`create files collection [${config.collectionName || config?.collection?._name}]`)
+    log(
+      `create files collection [${config.collectionName || config?.collection?._name}]`,
+    )
     log(`use bucket [${bucketName || defaultBucket || 'files'}]`)
     log(`use mime validation [${!!validateMime}]`)
     log(`use transform [${!!transformVersions}]`)
@@ -81,7 +102,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       validateUser,
       i18nFactory,
       log,
-      onErrorHook
+      onErrorHook,
     })
 
     // upload
@@ -89,9 +110,9 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       checkSize,
       checkExtension,
       checkUser,
-      log
+      log,
     })
-    const onInitiateUpload = async function (fileData) {
+    const onInitiateUpload = async (fileData) => {
       log('onInitiateUpload()')
       fileData.processingComplete = false
     }
@@ -101,7 +122,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       transformVersions,
       moveToGrid,
       log,
-      onErrorHook
+      onErrorHook,
     })
 
     // download
@@ -111,7 +132,7 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
       createObjectId: abstractCreateObjectId,
       onErrorHook,
       usePartialResponse,
-      log
+      log,
     })
 
     // remove
@@ -119,20 +140,23 @@ export const createGridFilesFactory = ({ i18nFactory = x => x, fs = require('fs'
     const afterRemove = getAfterRemove({
       bucket,
       createObjectId: abstractCreateObjectId,
-      onErrorHook
+      onErrorHook,
     })
 
-    const productConfig = Object.assign({
-      debug: factoryDebug,
-      onBeforeUpload: beforeUpload,
-      onInitiateUpload: onInitiateUpload,
-      onAfterUpload: afterUpload,
-      allowClientCode: false, // Disallow remove files from Client
-      interceptDownload: interceptDownload,
-      onBeforeRemove: beforeRemove,
-      onAfterRemove: afterRemove,
-      protected: onProtected
-    }, config)
+    const productConfig = Object.assign(
+      {
+        debug: factoryDebug,
+        onBeforeUpload: beforeUpload,
+        onInitiateUpload: onInitiateUpload,
+        onAfterUpload: afterUpload,
+        allowClientCode: false, // Disallow remove files from Client
+        interceptDownload: interceptDownload,
+        onBeforeRemove: beforeRemove,
+        onAfterRemove: afterRemove,
+        protected: onProtected,
+      },
+      config,
+    )
 
     return new FilesCollection(productConfig)
   }
