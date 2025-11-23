@@ -17,7 +17,7 @@ Package.onUse((api) => {
   api.use('ecmascript')
   api.use('check')
   api.use('mongo')
-  api.use('ostrio:files@2.0.0 || 3.0.0-rc.3', ['server', 'client'], {
+  api.use('ostrio:files@2.0.0 || 3.0.1', ['server', 'client'], {
     weak: true,
   })
   api.mainModule('grid-factory-client.js', 'client')
