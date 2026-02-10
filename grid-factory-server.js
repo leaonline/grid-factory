@@ -68,7 +68,7 @@ export const createGridFilesFactory = ({
     transformVersions,
     usePartialResponse,
     onError,
-    debug:log = noop,
+    debug: log = noop,
     ...config
   }) => {
     console.debug(typeof abstractLog, typeof log)

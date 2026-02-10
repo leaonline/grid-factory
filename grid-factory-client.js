@@ -23,7 +23,7 @@ import { noop } from './lib/utils/noop'
 export const createGridFilesFactory = (abstractOptions = {}) => {
   check(abstractOptions, Match.ObjectIncluding(abstractOptionsDef))
 
-  const { i18nFactory, onError, debug:abstractLog = noop } = abstractOptions
+  const { i18nFactory, onError, debug: abstractLog = noop } = abstractOptions
   const abstractOnError = onError || ((e) => console.error(e))
 
   /**
@@ -37,7 +37,14 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
    * @return {FilesCollection}
    */
   const factoryFunction = (options = {}) => {
-    const { maxSize, extensions, validateUser, onError, debug: log = abstractLog, ...config } = options
+    const {
+      maxSize,
+      extensions,
+      validateUser,
+      onError,
+      debug: log = abstractLog,
+      ...config
+    } = options
     log(
       `create files collection [${config.collectionName || config?.collection?._name}]`,
     )
@@ -51,7 +58,7 @@ export const createGridFilesFactory = (abstractOptions = {}) => {
     })
 
     const factoryConfig = {
-      debug: !!(log),
+      debug: !!log,
       onbeforeunloadMessage:
         Meteor.isClient &&
         (() => i18nFactory('filesCollection.onbeforeunloadMessage')),
