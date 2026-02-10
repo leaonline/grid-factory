@@ -31,29 +31,38 @@ describe(getMoveToGrid.name, () => {
 
     await collection.insertAsync(filesDoc)
 
-    let bucketWritten = false
-    let fileRemoved = false
+    let bucketWrittenCalls = 0
+    let fileRemovedCalls = 0
+    let writableStreamClosed = 0
 
     const bucket = {
-      openUploadStream(fileName, { contentType, metadata }) {
+      name: 'testBucket',
+      openUploadStream(fileName, data) {
+        const { contentType, metadata } = data
         expect(fileName).to.equal(filesDoc.name)
         expect(contentType).to.equal(filesDoc.type)
         expect(metadata.value).to.equal(filesDoc.meta.value)
         expect(metadata.fileId).to.equal(filesDoc._id)
 
-        const writableStream = new Stream.Writable()
-        writableStream._write = (chunk, encoding, next) => {
-          expect(chunk.toString()).to.equal(value)
-          bucketWritten = true
-          next()
-        }
+        const writableStream = new Stream.Writable({
+          write(chunk, encoding, next) {
+            expect(chunk.toString()).to.equal(value)
+            bucketWrittenCalls++
+            next()
+          },
+          final (cb) {
+            writableStreamClosed++
+            cb()
+          }
+        })
+        writableStream.id = { toHexString: () => value }
 
         setTimeout(
           () =>
             writableStream.emit('finish', {
               _id: { toHexString: () => value },
             }),
-          10,
+          1000,
         )
 
         return writableStream
@@ -69,11 +78,7 @@ describe(getMoveToGrid.name, () => {
           expect.fail()
         }
 
-        const readStream = new Stream.Readable({
-          read() {},
-        })
-        readStream.push(value)
-        return readStream
+        return Stream.Readable.from([value])
       },
     }
 
@@ -82,15 +87,17 @@ describe(getMoveToGrid.name, () => {
         expect(file._id).to.equal(filesDoc._id)
         const version = getProp(file.versions, versionName)
         expect(version.meta.gridFsFileId).to.equal(value)
-        fileRemoved = true
+        fileRemovedCalls++
       },
     }
 
-    const log = () => {}
+    const log = (...args) => console.debug('[getMoveToGrid]', ...args)
     const moveToGrid = getMoveToGrid({ bucket, fs, log })
     await moveToGrid(filesDoc, collection, filesCollection)
 
-    expect(bucketWritten).to.equal(true)
-    expect(fileRemoved).to.equal(true)
+    expect(writableStreamClosed, 'remove calls').to.equal(2)
+    expect(fileRemovedCalls, 'remove calls').to.equal(2)
+    expect(bucketWrittenCalls, 'bucket calls').to.equal(2)
   })
+  it('automatically closes the write stream if the read stream emits an error')
 })
