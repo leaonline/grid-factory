@@ -1,6 +1,5 @@
 import { check, Match } from 'meteor/check'
 import { FilesCollection } from 'meteor/ostrio:files'
-import { getLog } from './lib/both/getLog'
 import { getCheckSize } from './lib/both/getCheckSize'
 import { getCheckExtension } from './lib/both/getCheckExtension'
 import { getCheckUser } from './lib/both/getCheckUser'
@@ -13,16 +12,17 @@ import { getAfterUpload } from './lib/server/getAfterUpload'
 import { getInterceptDownload } from './lib/server/getInterceptDownload'
 import { getDefaultBucket } from './lib/utils/getDefaultBucket'
 import { getDefaultGridFsFileId } from './lib/utils/getDefaultGridFsFileId'
+import { noop } from './lib/utils/noop'
 
 /**
- * Craetes a new factory function to create GridFS-backed FilesCollections.
+ * Creates a new factory function to create GridFS-backed FilesCollections.
  * @param i18nFactory {Function} a Function that gets an i18n id + options and may return a translated String
  * @param fs The node file system, injectable for convenience reasons (testing, package deps, dropin replacements etc.)
  * @param bucketFactory {Function} A function that returns a valid GridFS bucket by name
  * @param defaultBucket {String} A name for the defaultBucket.
  * @param createObjectId {Function} A function that transform a gridfs id to a valid ObjectId
  * @param onError {Function} A function that receives an error, if any occurred
- * @param debug {Boolean} A flag used to log debug messages to the console
+ * @param debug {Function} function to pass debug logs to
  * @return {function(options): FilesCollection} Factory Function
  */
 export const createGridFilesFactory = ({
@@ -32,7 +32,7 @@ export const createGridFilesFactory = ({
   defaultBucket,
   createObjectId,
   onError,
-  debug,
+  debug: abstractLog = noop,
 } = {}) => {
   check(i18nFactory, Function)
   check(fs, Match.ObjectIncluding({ createReadStream: Function }))
@@ -40,11 +40,9 @@ export const createGridFilesFactory = ({
   check(defaultBucket, Match.Maybe(String))
   check(createObjectId, Match.Maybe(Function))
   check(onError, Match.Maybe(Function))
-  check(debug, Match.Maybe(Boolean))
+  check(abstractLog, Match.Maybe(Function))
 
-  const abstractDebug = debug
   const abstractOnError = onError || ((e) => console.error(e))
-  const abstractLog = getLog(abstractDebug)
   const abstractBucketFactory = bucketFactory || getDefaultBucket
   const abstractCreateObjectId = createObjectId || getDefaultGridFsFileId
   /**
@@ -58,7 +56,7 @@ export const createGridFilesFactory = ({
    * @param usePartialResponse
    * @param onError {Function} A function that receives an error, if any occurred, overrides onError from the abstract level
    * @param config override any parameteor for the original FilesCollection constructor
-   * @param debug {Boolean} debug flag for extended logging
+   * @param debug {Function} debug function for extended logging
    * @return {FilesCollection}
    */
   const factory = ({
@@ -70,20 +68,18 @@ export const createGridFilesFactory = ({
     transformVersions,
     usePartialResponse,
     onError,
-    debug,
+    debug:log = noop,
     ...config
   }) => {
+    console.debug(typeof abstractLog, typeof log)
     check(bucketName, Match.Maybe(String))
     check(maxSize, Match.Maybe(Number))
-    check(debug, Match.Maybe(Boolean))
+    check(log, Match.Maybe(Function))
     check(validateUser, Match.Maybe(Function))
     check(validateMime, Match.Maybe(Function))
     check(usePartialResponse, Match.Maybe(Boolean))
     check(transformVersions, Match.Maybe(Function))
     check(onError, Match.Maybe(Function))
-
-    const factoryDebug = debug || abstractDebug
-    const log = getLog(factoryDebug)
 
     log(
       `create files collection [${config.collectionName || config?.collection?._name}]`,
@@ -145,7 +141,7 @@ export const createGridFilesFactory = ({
 
     const productConfig = Object.assign(
       {
-        debug: factoryDebug,
+        debug: !!(log || abstractLog),
         onBeforeUpload: beforeUpload,
         onInitiateUpload: onInitiateUpload,
         onAfterUpload: afterUpload,
